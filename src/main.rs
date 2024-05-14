@@ -5,6 +5,7 @@ use tower_http::cors::CorsLayer;
 
 use crate::state::KeksiState;
 
+mod entity;
 mod router;
 mod state;
 
