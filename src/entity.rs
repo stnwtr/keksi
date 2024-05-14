@@ -1,6 +1,6 @@
 use axum_extra::extract::cookie::{Cookie, Expiration, SameSite};
 use serde::{Deserialize, Serialize};
-use time::{Duration, OffsetDateTime, serde::timestamp};
+use time::{serde::timestamp, Duration, OffsetDateTime};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Keksi {
@@ -69,8 +69,8 @@ impl<'a> From<Keksi> for Cookie<'a> {
     }
 }
 
-impl<'a> From<Cookie<'a>> for Keksi {
-    fn from(value: Cookie) -> Self {
+impl<'a> From<&Cookie<'a>> for Keksi {
+    fn from(value: &Cookie) -> Self {
         Keksi {
             name: value.name().to_string(),
             value: value.value().to_string(),

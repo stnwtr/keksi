@@ -9,7 +9,7 @@ pub struct KeksiState {
 impl KeksiState {
     pub fn new(key: String) -> Self {
         Self {
-            key: Key::from(key.as_bytes())
+            key: Key::from(key.as_bytes()),
         }
     }
 }

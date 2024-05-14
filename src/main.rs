@@ -1,10 +1,11 @@
-use axum::{Router, serve};
+use axum::{serve, Router};
 use tokio::net::TcpListener;
 use tokio::signal;
 use tower_http::cors::CorsLayer;
 
 use crate::state::KeksiState;
 
+mod controller;
 mod entity;
 mod router;
 mod state;
@@ -22,6 +23,7 @@ pub async fn main() -> anyhow::Result<()> {
     let router = Router::new()
         .merge(router::static_files())
         .nest("/api/v1", router::health())
+        .nest("/api/v1", router::cookie())
         .layer(CorsLayer::permissive())
         .with_state(state);
 
@@ -42,7 +44,7 @@ async fn shutdown_signal() {
     };
 
     #[cfg(unix)]
-        let terminate = async {
+    let terminate = async {
         signal::unix::signal(signal::unix::SignalKind::terminate())
             .expect("failed to install signal handler")
             .recv()
@@ -50,7 +52,7 @@ async fn shutdown_signal() {
     };
 
     #[cfg(not(unix))]
-        let terminate = std::future::pending::<()>();
+    let terminate = std::future::pending::<()>();
 
     tokio::select! {
         _ = ctrl_c => {},
