@@ -1,13 +1,14 @@
 use axum_extra::extract::cookie::{Cookie, Expiration, SameSite};
 use serde::{Deserialize, Serialize};
-use time::{serde::timestamp, Duration, OffsetDateTime};
+use time::serde::timestamp;
+use time::{Duration, OffsetDateTime};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Keksi {
     name: String,
     value: String,
     expires: Option<KeksiExpiration>,
-    max_age: Option<i32>,
+    max_age: Option<i64>,
     domain: Option<String>,
     path: Option<String>,
     secure: Option<bool>,
@@ -38,7 +39,7 @@ impl<'a> From<Keksi> for Cookie<'a> {
         }
 
         if let Some(max_age) = value.max_age {
-            cookie.set_max_age(Duration::seconds(max_age as i64));
+            cookie.set_max_age(Duration::seconds(max_age));
         }
 
         if let Some(domain) = value.domain {
@@ -77,7 +78,7 @@ impl<'a> From<&Cookie<'a>> for Keksi {
             expires: value.expires().map(|expiration| expiration.into()),
             max_age: value
                 .max_age()
-                .map(|duration| duration.as_seconds_f32() as i32),
+                .map(|duration| duration.as_seconds_f32() as i64),
             domain: value.domain().map(|domain| domain.to_string()),
             path: value.path().map(|path| path.to_string()),
             secure: value.secure(),
@@ -88,10 +89,20 @@ impl<'a> From<&Cookie<'a>> for Keksi {
     }
 }
 
+impl Keksi {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn value(&self) -> &str {
+        &self.value
+    }
+}
+
 impl From<KeksiExpiration> for Expiration {
     fn from(value: KeksiExpiration) -> Self {
         match value {
-            KeksiExpiration::DateTime(dt) => Expiration::DateTime(dt),
+            KeksiExpiration::DateTime(date_time) => Expiration::DateTime(date_time),
             KeksiExpiration::Session => Expiration::Session,
         }
     }
@@ -100,7 +111,7 @@ impl From<KeksiExpiration> for Expiration {
 impl From<Expiration> for KeksiExpiration {
     fn from(value: Expiration) -> Self {
         match value {
-            Expiration::DateTime(dt) => KeksiExpiration::DateTime(dt),
+            Expiration::DateTime(date_time) => KeksiExpiration::DateTime(date_time),
             Expiration::Session => KeksiExpiration::Session,
         }
     }

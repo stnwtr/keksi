@@ -1,33 +1,27 @@
 use axum::{serve, Router};
+use time::OffsetDateTime;
 use tokio::net::TcpListener;
 use tokio::signal;
 use tower_http::cors::CorsLayer;
 
-use crate::state::KeksiState;
-
 mod controller;
 mod entity;
 mod router;
-mod state;
 
 #[tokio::main]
-pub async fn main() -> anyhow::Result<()> {
-    dotenvy::dotenv().ok();
+pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let listener = TcpListener::bind("0.0.0.0:8080").await?;
 
-    let key = std::env::var("KEKSI_KEY")?;
-    let hostname = std::env::var("KEKSI_ADDRESS")?;
-    let port = std::env::var("KEKSI_PORT")?.parse()?;
-
-    let state = KeksiState::new(key);
+    println!(
+        "[{}] Listening on http://0.0.0.0:8080/",
+        OffsetDateTime::now_utc()
+    );
 
     let router = Router::new()
         .merge(router::static_files())
         .nest("/api/v1", router::health())
         .nest("/api/v1", router::cookie())
-        .layer(CorsLayer::permissive())
-        .with_state(state);
-
-    let listener = TcpListener::bind((hostname, port)).await?;
+        .layer(CorsLayer::permissive());
 
     serve(listener, router)
         .with_graceful_shutdown(shutdown_signal())
