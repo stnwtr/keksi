@@ -19,14 +19,19 @@ pub struct Keksi {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum KeksiExpiration {
+    #[serde(rename = "date_time")]
     DateTime(#[serde(with = "timestamp")] OffsetDateTime),
+    #[serde(rename = "session")]
     Session,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum KeksiSameSite {
+    #[serde(rename = "strict")]
     Strict,
+    #[serde(rename = "lax")]
     Lax,
+    #[serde(rename = "none")]
     None,
 }
 
